@@ -1,0 +1,12 @@
+{
+  "name": "js-mock-ai",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {},
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "osc": "^2.3.1"
+  }
+}
