@@ -6,26 +6,39 @@ Install stuff:
 
 # Running on Raspberry PI
 
-Install stuff:
+## Install stuff:
 '''
 $ sudo apt-get install jackd1
 $ sudo apt-get install supercolldier
 '''
 
-# Running the script:
+## Running the script:
 
-DISPLAY=:0.0 sclang
+'''
+DISPLAY=:0.0 sclang ccc_soundplayer.sc
+'''
+
+Supercollider starts JACK.
+
+## Running the mock word server
+
+There is a mock word server. 
+
+'''
+cd node-mock-ai
+npm install
+CCC_SOUND_DIR=/path/to/sounds node server.js
+'''
+
+# Other miscellania
 
 
-Start JACK and sclang headless:
+Start JACK:
 '''
 sudo jackd -dalsa -dhw:0
 '''
-(probably we will want to configure the system to launch JACK via an init.d script)
 
-Start sclang headless:
+Start the sclang repl headless:
 '''
 DISPLAY=:0.0 sclang
 '''
-Will show the sclang repl.
-

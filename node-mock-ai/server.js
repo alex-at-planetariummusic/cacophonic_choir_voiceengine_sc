@@ -5,10 +5,10 @@
 const osc = require('osc');
 const localPort = 11000; // listen on this port
 
-const soundsPath = process.env.CCP_SOUND_DIR;
+const soundsPath = process.env.CCC_SOUND_DIR;
 
 if (!soundsPath) {
-  throw "environment variable CCP_SOUND_DIR must be set";
+  throw "environment variable CCC_SOUND_DIR must be set";
 }
 
 const oscPort = new osc.UDPPort({
@@ -24,8 +24,6 @@ oscPort.on("ready", function () {
   // something has to send the first message. It should probably be the supercollider part,
   // but for testing purposes it's the word server
   sendMessage();
-
-
 });
 
 

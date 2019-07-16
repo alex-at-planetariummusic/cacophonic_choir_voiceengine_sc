@@ -21,6 +21,15 @@
     });
 };
 
+  
+/**
+ * Listens for /nextWord/1 messages and plays the sound
+ */
+~oscFunction = OSCFunc({ arg msg, time, addr, recvPort;
+  "Received message:".postln;
+  [msg, time, addr, recvPort].postln;
+  ~playSound.value(msg[1]);
+  }, '/nextWord/1', );
 
 // Boot server and start voice server
 Server.local.waitForBoot({
@@ -34,69 +43,20 @@ Server.local.waitForBoot({
       bufNum;
     var scaledRate = sampleRate / SampleRate.ir;
     
+    // 2 = Done.freeSelf (Done is not in pi's supercollider)
     Out.ar(out,
-        PlayBuf.ar(1, bufNum, scaledRate, doneAction: Done.freeSelf)
+        PlayBuf.ar(1, bufNum, scaledRate, doneAction: 2)
     );
   }).send(s);
-  
-~oscFunction = OSCFunc({ arg msg, time, addr, recvPort;
-  "Received message:".postln;
-   [msg, time, addr, recvPort].postln;
-  ~playSound.value(msg[1]);
-}, '/nextWord/1', );
-
 });
 
-
-
-
-
-
-// Listen for OSC messages
-// ~netAddress = NetAddr.new("127.0.0.1", NetAddr.langPort);
-// create the OSCFunc
-// We don't 
-// ~oscFunction = OSCFunc({ arg msg, time, addr, recvPort;
-/**
- * Listen for '/nextWord/1' messages, and play the appropriate file
- */
-
-~oscFunction.recvPort
-
-~oscFunction.free
-
 // send OSC message to server
-b = NetAddr.new("127.0.0.1", 11000);
-b.sendMsg("/lastword/1", "there", "fwohihfwe");
-OSCFunc.trace(true);
-OSCFunc.trace(false);
-
+// b = NetAddr.new("127.0.0.1", 11000);
+// b.sendMsg("/lastword/1", "there", "fwohihfwe");
+// OSCFunc.trace(true);
+// OSCFunc.trace(false);
 
 // play from disk // ///////////////
-b = Buffer.cueSoundFile(s, ~sound, 0, 1);
-x = { DiskIn.ar(1, b.bufnum) }.play;
-b.close;	
-//////////////////////////////////
-
-
-// need to put in SC classpath; e.g. Platform.userExtensionDir
-MockServer {
-  
-  *new {
-    this.val = "testval";
-  }
-  
-  testMethod {
-    "blah".postln;
-  }
-}
-
-MyClass {
-    var action;
-    *new { |action|
-        ^super.newCopyArgs(action)
-    }
-    value { |x|
-        action.value(x);
-    }
-}
+// b = Buffer.cueSoundFile(s, ~sound, 0, 1);
+// x = { DiskIn.ar(1, b.bufnum) }.play;
+// b.close;	
