@@ -9,12 +9,12 @@ if (!soundsPath) {
 }
 
 const localPort = 11000; // listen on this port
-
-
+const sclangPort = 57120; // this is the port supercollider listens for OSC messages on
 
 const oscPort = new osc.UDPPort({
   localAddress: "0.0.0.0",
-  localPort: localPort
+  localPort: localPort,
+  remotePort: sclangPort
 });
 
 const newWordFile = `${soundsPath}/built.aiff`

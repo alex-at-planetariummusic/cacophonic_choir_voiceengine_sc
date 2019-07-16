@@ -4,6 +4,7 @@
  */
 const osc = require('osc');
 const localPort = 11000; // listen on this port
+const sclangPort = 57120; // this is the port supercollider listens for OSC messages on
 
 const soundsPath = process.env.CCC_SOUND_DIR;
 
@@ -13,7 +14,8 @@ if (!soundsPath) {
 
 const oscPort = new osc.UDPPort({
   localAddress: "0.0.0.0",
-  localPort: localPort
+  localPort: localPort,
+  remotePort: sclangPort
 });
 
 oscPort.on("ready", function () {
@@ -27,7 +29,8 @@ oscPort.on("ready", function () {
 });
 
 
-const words = ['burns',
+const words = [
+  'burns',
   'built',
   'bucks',
   'busy',
