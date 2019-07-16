@@ -38,6 +38,12 @@ Server.local.waitForBoot({
         PlayBuf.ar(1, bufNum, scaledRate, doneAction: Done.freeSelf)
     );
   }).send(s);
+  
+~oscFunction = OSCFunc({ arg msg, time, addr, recvPort;
+  "Received message:".postln;
+   [msg, time, addr, recvPort].postln;
+  ~playSound.value(msg[1]);
+}, '/nextWord/1', );
 
 });
 
@@ -54,11 +60,6 @@ Server.local.waitForBoot({
 /**
  * Listen for '/nextWord/1' messages, and play the appropriate file
  */
-~oscFunction = OSCFunc({ arg msg, time, addr, recvPort;
-  "Received message:".postln;
-   [msg, time, addr, recvPort].postln;
-  ~playSound.value(msg[1]);
-}, '/nextWord/1', );
 
 ~oscFunction.recvPort
 
