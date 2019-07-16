@@ -3,9 +3,9 @@
  **/
 const osc = require('osc');
 
-const soundsPath = process.env.CCP_SOUND_DIR;
+const soundsPath = process.env.CCC_SOUND_DIR;
 if (!soundsPath) {
-  throw "environment variable CCP_SOUND_DIR must be set";
+  throw "environment variable CCC_SOUND_DIR must be set";
 }
 
 const localPort = 11000; // listen on this port

@@ -1,4 +1,3 @@
-
 /**
  * Play the soundfile at the path soundFile, then request a new word from the language server
  * e.g.:
@@ -21,15 +20,15 @@
     });
 };
 
-  
 /**
  * Listens for /nextWord/1 messages and plays the sound
  */
-~oscFunction = OSCFunc({ arg msg, time, addr, recvPort;
+~oscFunction = OSCFunc({ 
+  arg msg, time, addr, recvPort;
   "Received message:".postln;
   [msg, time, addr, recvPort].postln;
   ~playSound.value(msg[1]);
-  }, '/nextWord/1', );
+}, '/nextWord/1', );
 
 // Boot server and start voice server
 Server.local.waitForBoot({
@@ -45,10 +44,15 @@ Server.local.waitForBoot({
     
     // 2 = Done.freeSelf (Done is not in pi's supercollider)
     Out.ar(out,
-        PlayBuf.ar(1, bufNum, scaledRate, doneAction: 2)
+        PlayBuf.ar(1, bufNum, scaledRate, doneAction: 2) ! 2
     );
   }).send(s);
+  
+  
+  // "heartbeat" tone for testing
+  a = { |freq = 440| SinOsc.ar(freq, mul: 0.1) ! 2 }.play()
 });
+
 
 // send OSC message to server
 // b = NetAddr.new("127.0.0.1", 11000);
