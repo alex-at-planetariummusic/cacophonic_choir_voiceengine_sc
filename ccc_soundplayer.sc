@@ -16,6 +16,7 @@
       var elapsedTime = Date.getDate.rawSeconds - bufferReadTime;
       ("Playing sound took" + elapsedTime + "seconds").postln;
       NetAddr.new("127.0.0.1", 11000).sendMsg("/lastword/1", soundFile);
+      buffer.free;
       })
     });
 };
@@ -48,7 +49,6 @@ Server.local.waitForBoot({
     );
   }).send(s);
   
-  
   // "heartbeat" tone for testing
   a = { |freq = 440| SinOsc.ar(freq, mul: 0.1) ! 2 }.play()
 });
@@ -57,7 +57,7 @@ Server.local.waitForBoot({
 // send OSC message to server
 // b = NetAddr.new("127.0.0.1", 11000);
 // b.sendMsg("/lastword/1", "there", "fwohihfwe");
-// OSCFunc.trace(true);
+// OSCFunc.trace(true, true);
 // OSCFunc.trace(false);
 
 // play from disk // ///////////////
