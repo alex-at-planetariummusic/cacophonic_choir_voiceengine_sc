@@ -6,24 +6,32 @@ Install stuff:
 
 # Running on Raspberry PI
 
-## Install dependencies on Debian Linux:
+## Setting up 
+Install dependencies:
 ```
 $ sudo apt-get install jackd1
-$ sudo apt-get install supercolldier
+$ sudo apt-get install supercollider
 ```
+
+Add this line to `/etc/security/limits.conf`:
+```
+@audio          -       rtprio          99
+```
+Not sure if something needs to be done to reload `limits.conf`; rebooting after making this change might be a good idea.
 
 ## Running the script:
 
 ```
-DISPLAY=:0.0 sclang ccc_soundplayer.sc
+$ DISPLAY=:0.0 sclang ccc_soundplayer.sc
 ```
 
 Supercollider starts JACK (though we might want to have jack started by root as a service so it can run at a higher priority).
 
 ## Running the mock word server
 
-There is a mock word server. 
+There is a mock word server written in node.js; it lives in the `node-mock-ai` folder. See the readme there for more details.
 
+Quickstart:
 ```
 $ cd node-mock-ai
 $ npm install
