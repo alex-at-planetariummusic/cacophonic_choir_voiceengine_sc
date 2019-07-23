@@ -1,6 +1,6 @@
 /**
- * Mock word server; receives /lastword/1 OSC messages and replies with
- * /nextWord/1 OSC messages.
+ * Mock word server; receives /lastword/0 OSC messages and replies with
+ * /nextWord/0 OSC messages.
  */
 const osc = require('osc');
 const localPort = 11000; // listen on this port
@@ -18,7 +18,7 @@ const oscPort = new osc.UDPPort({
   remotePort: sclangPort
 });
 
-oscPort.on("ready", function () {
+oscPort.on("ready", function() {
 
   console.log("Listening for OSC over UDP.");
   console.log("Port:", oscPort.options.localPort);
@@ -30,7 +30,7 @@ oscPort.on("ready", function () {
 
 
 const words = [
-  'burns',
+  'DOESNOTEXIST',
   'built',
   'bucks',
   'busy',
@@ -44,10 +44,10 @@ const words = [
 ];
 
 
-oscPort.on("message", function (oscMessage) {
+oscPort.on("message", function(oscMessage) {
   console.log("Received message: ", oscMessage);
 
-  if (oscMessage.address === '/lastword/1') {
+  if (oscMessage.address === '/lastword/0') {
     console.log(`Last word was "${oscMessage.args[0]}"`);
     sendMessage();
   } else {
@@ -56,15 +56,15 @@ oscPort.on("message", function (oscMessage) {
 });
 
 /**
- * Send a random /nextWord/1 message to supercollider
+ * Send a random /nextWord/0 message to supercollider
  */
 function sendMessage() {
   const newWord = words[Math.round(Math.random() * 10)];
   const newWordFile = `${soundsPath}/${newWord}.aiff`
 
-  console.log(`Sending new word "${newWordFile}"`); 
+  console.log(`Sending new word "${newWordFile}"`);
   oscPort.send({
-    address: '/nextWord/1',
+    address: '/nextWord/0',
     args: [newWordFile]
   });
 }

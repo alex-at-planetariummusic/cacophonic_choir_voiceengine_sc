@@ -8,7 +8,7 @@ You need Node. If you are running Debian you probably want to follow the [instru
 
 ```
 $ npm install
-$ CCP_SOUND_DIR=/my/sound/dir node server.js
+$ CCC_SOUND_DIR=/my/sound/dir node server.js
 ```
 
-Where `CCP_SOUND_DIR` is the directory where the sound files reside.
+Where `CCC_SOUND_DIR` is the directory where the sound files reside.
