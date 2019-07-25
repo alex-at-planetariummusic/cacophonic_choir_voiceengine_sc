@@ -13,11 +13,11 @@ const oscPort = new osc.UDPPort({
 });
 
 oscPort.on("ready", function() {
-  var randomDistance = Math.round(Math.random() * 20);
+  var randomDistance = Math.round(Math.random() * 99);
   console.log(`Sending distance: ${randomDistance}`);
 
   oscPort.send({
-    address: '/nextWord/1',
+    address: '/distance',
     args: [randomDistance]
   });
 

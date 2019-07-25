@@ -8,6 +8,10 @@ Server.local.waitForBoot({
       fileLoadErrorOSCFunc,
       nextWordListOSCFunc,
       unZombieRoutine;
+      
+  // ~group = Group.basicNew(s,1);
+  // ~group = Group.new;
+  // ~bus = Bus.audio(s, 2);
 
   /**
    * Asks for a word from the word server
@@ -29,13 +33,14 @@ Server.local.waitForBoot({
     buffer = Buffer.read(s, soundFile, action: {|buf|
       var bufferReadTime = Date.getDate.rawSeconds;
       ("Loading buffer took" + (bufferReadTime - startTime) + "seconds").postln;
-      synth = Synth.new(\playFile, [\bufNum, buf]);
+      // synth = Synth.head(~group, \playFile, [\bufNum, buf]);
+      // synth = Synth.head(~processor, \playFile, [\bufNum, buf]);
+      synth = Synth.head(s, \playFile, [\bufNum, buf]);
+      // synth = Synth.new(\playFile, [\bufNum, buf]);
       synth.onFree({
-        var elapsedTime = Date.getDate.rawSeconds - bufferReadTime;
-        ("Playing sound took" + elapsedTime + "seconds").postln;
-        askForWordFunc.value(soundFile);
         buffer.free;
-        });
+        askForWordFunc.value(soundFile);
+      });
     });
   };
   /**
@@ -43,10 +48,9 @@ Server.local.waitForBoot({
    */
   nextWordListOSCFunc = OSCFunc({
     arg msg, time, addr, recvPort;
-    "Received message:".postln;
+    "got next word".postln;
     lastWord = msg[1];
     lastReceivedWordTime = Date.getDate.rawSeconds;
-    [msg, time, addr, recvPort].postln;
     playSoundFunc.value(msg[1]);
   }, '/nextWord/0', );
   
@@ -57,7 +61,6 @@ Server.local.waitForBoot({
   fileLoadErrorOSCFunc = OSCFunc({ 
     arg msg;
     var bufNumber;
-    "An error".postln;
     if (msg[1] == '/b_allocRead') {
       bufNumber = msg[3];
       ("Buffer allocation read error; buffer:" + bufNumber).postln;
@@ -87,15 +90,34 @@ Server.local.waitForBoot({
     }
   });
   TempoClock.default.sched(0, unZombieRoutine);
-
+  
+  // Sound processing module
+  SynthDef(\processSound, {
+    arg bus = 0,
+        filtFreq = 200; // TODO: should take 0--99 values
+    var input;
+  
+    // it's a stereo bus, but we have mono output so no point in grabbing both channels
+    input = In.ar(bus, 1);
+    ReplaceOut.ar(bus, LPF.ar(input, filtFreq)).dup);
+  }, [nil, 1]).send(s);
+  
+  // this is a less-than-ideal way to call a callback after the server has created
+  // the \processSound synth definition
+  ~pssent = OSCFunc({ 
+    arg msg, time, addr, recvPort;
+    "processSound was sent".postln;
+    ~processor = Synth.tail(s, \processSound);
+  }, "/done").oneShot;
+  
   /**
-  * Synth to play the file
-  */
+   * Synth to play the file
+   */
   SynthDef(\playFile, {
     arg out = 0,
-      rate = 1,
-      sampleRate = 22050, // sample rate of the file
-      bufNum;
+        rate = 1,
+        sampleRate = 22050, // sample rate of the file
+        bufNum;
     var scaledRate = sampleRate / SampleRate.ir;
 
     // 2 = Done.freeSelf (Done is not in pi's supercollider)
@@ -103,21 +125,6 @@ Server.local.waitForBoot({
         PlayBuf.ar(1, bufNum, scaledRate, doneAction: 2).dup
     );
   }).send(s);
-  
-  // SynthDef(\processSound, {
-  //   arg bus = 0;
-  //   var input,
-  //       tremSig;
-  // 
-  //   // it's a stereo bus, but we have mono output so no point in grabbing both channels
-  //   input = In.ar(0, 1);
-  // 
-  //   tremSig = SinOsc.ar(2, mul: 0.5, add: 0.5);
-  //   Out.ar(bus, (tremSig * input));
-  // }).send(s);
-
-  // "heartbeat" tone for testing
-  // a = { |freq = 440| SinOsc.ar(freq, mul: 0.1).dup }.play()
   
   /**
    * function that responds to the sensor inputs
@@ -128,15 +135,15 @@ Server.local.waitForBoot({
     sensorValue = msg[1];
     ("Received sensor value" + sensorValue).postln;
     
-    a.set(\freq, (40 + sensorValue).midicps)
+   // TODO: Map range
+   // 0 = close 99 = far
+   // ad-hoc scaling
+   ~processor.set(\filtFreq, 200 + (120 - sensorValue).midicps);
+    // a.set(\freq, (40 + sensorValue).midicps)
   }, '/distance');
-  
 });
 
 // OSCFunc.trace(true, true);
 // OSCFunc.trace(false);
 
-// play from disk // ///////////////
-// b = Buffer.cueSoundFile(s, ~sound, 0, 1);
-// x = { DiskIn.ar(1, b.bufnum) }.play;
-// b.close;	
+// ~processor.set(\filtFreq, 2500);
