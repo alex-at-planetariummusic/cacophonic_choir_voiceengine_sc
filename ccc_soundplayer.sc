@@ -93,7 +93,7 @@ Server.local.waitForBoot({
   
     // it's a stereo bus, but we have mono output so no point in grabbing both channels
     input = In.ar(bus, 1);
-    ReplaceOut.ar(bus, LPF.ar(input, filtFreq)).dup);
+    ReplaceOut.ar(bus, LPF.ar(input, filtFreq).dup);
   }, [nil, 1]).send(s);
   
   // this is a less-than-ideal way to call a callback after the server has created
@@ -133,7 +133,6 @@ Server.local.waitForBoot({
    // 0 = close 99 = far
    // ad-hoc scaling
    ~processor.set(\filtFreq, 200 + (120 - sensorValue).midicps);
-    // a.set(\freq, (40 + sensorValue).midicps)
   }, '/distance');
 });
 
