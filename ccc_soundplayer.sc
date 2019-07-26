@@ -1,3 +1,4 @@
+
 // Boot server and start voice server
 Server.local.waitForBoot({
   var askForWordFunc,
@@ -9,6 +10,10 @@ Server.local.waitForBoot({
       nextWordListOSCFunc,
       unZombieRoutine;
 
+  "Booting the sound server!********************************************".postln;
+  ("sclang is using the port" + NetAddr.langPort).postln;
+  "*********************************************************************".postln;
+  
   /**
    * Asks for a word from the word server
    */
@@ -100,7 +105,7 @@ Server.local.waitForBoot({
   // the \processSound synth definition
   ~pssent = OSCFunc({ 
     arg msg, time, addr, recvPort;
-    "processSound was sent".postln;
+    "processSound SynthDef has been processed by the server ***************************".postln;
     ~processor = Synth.tail(s, \processSound);
   }, "/done").oneShot;
   
