@@ -8,10 +8,6 @@ Server.local.waitForBoot({
       fileLoadErrorOSCFunc,
       nextWordListOSCFunc,
       unZombieRoutine;
-      
-  // ~group = Group.basicNew(s,1);
-  // ~group = Group.new;
-  // ~bus = Bus.audio(s, 2);
 
   /**
    * Asks for a word from the word server
@@ -25,6 +21,7 @@ Server.local.waitForBoot({
    * e.g.:
    *
    * playSoundFunc.value('/Users/alex/Documents/cacaphonic/sounds/division.aiff');
+   * TODO: If a sound is already playing, ignore
    */
   playSoundFunc = {|soundFile|
     var buffer, synth, startTime;
@@ -33,10 +30,7 @@ Server.local.waitForBoot({
     buffer = Buffer.read(s, soundFile, action: {|buf|
       var bufferReadTime = Date.getDate.rawSeconds;
       ("Loading buffer took" + (bufferReadTime - startTime) + "seconds").postln;
-      // synth = Synth.head(~group, \playFile, [\bufNum, buf]);
-      // synth = Synth.head(~processor, \playFile, [\bufNum, buf]);
       synth = Synth.head(s, \playFile, [\bufNum, buf]);
-      // synth = Synth.new(\playFile, [\bufNum, buf]);
       synth.onFree({
         buffer.free;
         askForWordFunc.value(soundFile);
