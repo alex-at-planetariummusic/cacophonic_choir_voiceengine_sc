@@ -2,7 +2,7 @@
 // Boot server and start voice server
 Server.local.waitForBoot({
   var askForWordFunc,
-      lastWord = "",
+      lastWord = "blank",
       playSoundFunc,
       sensorValue = 1,
       lastReceivedWordTime = 0,
@@ -143,5 +143,4 @@ Server.local.waitForBoot({
 
 // OSCFunc.trace(true, true);
 // OSCFunc.trace(false);
-
-// ~processor.set(\filtFreq, 2500);
+// ~processor.set(\filtFreq, 1900);
