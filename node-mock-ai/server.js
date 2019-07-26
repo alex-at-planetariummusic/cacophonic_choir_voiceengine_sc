@@ -4,7 +4,7 @@
  */
 const osc = require('osc');
 const localPort = 11000; // listen on this port
-const sclangPort = 57120; // this is the port supercollider listens for OSC messages on
+const sclangPort = 57121; // this is the port supercollider listens for OSC messages on
 
 const soundsPath = process.env.CCC_SOUND_DIR;
 
