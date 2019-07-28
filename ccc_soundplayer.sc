@@ -4,7 +4,6 @@
 // Boot server and start voice server
 Server.local.waitForBoot({
   var askForWordFunc,
-      lastWord = "blank",
       playSoundFunc,
       sensorValue = 1,
       lastReceivedWordTime = 0,
@@ -19,8 +18,8 @@ Server.local.waitForBoot({
   /**
    * Asks for a word from the word server
    */
-  askForWordFunc = { |lastWord|
-    NetAddr.new("127.0.0.1", ~wordPort).sendMsg("/lastword/0", lastWord, sensorValue);
+  askForWordFunc = {
+    NetAddr.new("127.0.0.1", ~wordPort).sendMsg("/lastword/0", sensorValue);
   };
   
   /**
@@ -40,7 +39,7 @@ Server.local.waitForBoot({
       synth = Synth.head(s, \playFile, [\bufNum, buf]);
       synth.onFree({
         buffer.free;
-        askForWordFunc.value(soundFile);
+        askForWordFunc.value;
       });
     });
   };
@@ -50,7 +49,6 @@ Server.local.waitForBoot({
   nextWordListOSCFunc = OSCFunc({
     arg msg, time, addr, recvPort;
     "got next word".postln;
-    lastWord = msg[1];
     lastReceivedWordTime = Date.getDate.rawSeconds;
     playSoundFunc.value(msg[1]);
   }, '/nextWord/0', );
@@ -66,7 +64,7 @@ Server.local.waitForBoot({
       bufNumber = msg[3];
       ("Buffer allocation read error; buffer:" + bufNumber).postln;
       s.cachedBufferAt(bufNumber).free;
-      askForWordFunc.value(lastWord);
+      askForWordFunc.value;
     };
   }, '/fail',);
 
@@ -84,7 +82,7 @@ Server.local.waitForBoot({
 
       if (now - lastReceivedWordTime > 10, {
         "Asking for word".postln;
-        askForWordFunc.value(lastWord);
+        askForWordFunc.value;
       });
       // wait a minute;
       60.yield;
