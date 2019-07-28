@@ -1,3 +1,5 @@
+// The port the word server listens on
+~wordPort = 11000; 
 
 // Boot server and start voice server
 Server.local.waitForBoot({
@@ -18,7 +20,7 @@ Server.local.waitForBoot({
    * Asks for a word from the word server
    */
   askForWordFunc = { |lastWord|
-    NetAddr.new("127.0.0.1", 11000).sendMsg("/lastword/0", lastWord);
+    NetAddr.new("127.0.0.1", ~wordPort).sendMsg("/lastword/0", lastWord, sensorValue);
   };
   
   /**
