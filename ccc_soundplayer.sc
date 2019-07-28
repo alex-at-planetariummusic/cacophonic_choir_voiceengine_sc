@@ -84,8 +84,8 @@ Server.local.waitForBoot({
         "Asking for word".postln;
         askForWordFunc.value(lastWord);
       });
-      // wait ten seconds;
-      10.yield;
+      // wait a minute;
+      60.yield;
     }
   });
   TempoClock.default.sched(0, unZombieRoutine);
@@ -107,7 +107,7 @@ Server.local.waitForBoot({
     arg msg, time, addr, recvPort;
     "processSound SynthDef has been processed by the server ***************************".postln;
     ~processor = Synth.tail(s, \processSound);
-  }, "/done").oneShot;
+  }, "/done", argTemplate: ["/d_recv"]).oneShot;
   
   /**
    * Synth to play the file
