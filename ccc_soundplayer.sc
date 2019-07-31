@@ -103,11 +103,19 @@ Server.local.waitForBoot({
   
   // this is a less-than-ideal way to call a callback after the server has created
   // the \processSound synth definition
-  ~pssent = OSCFunc({ 
-    arg msg, time, addr, recvPort;
-    "processSound SynthDef has been processed by the server ***************************".postln;
+  // doesn't always work....
+  // ~pssent = OSCFunc({ 
+  //   arg msg, time, addr, recvPort;
+  //   "processSound SynthDef has been processed by the server ***************************".postln;
+  //   ~processor = Synth.tail(s, \processSound);
+  // }, "/done", argTemplate: ["/d_recv"]).oneShot;
+  
+  // cheesy way to create the sound processing node after its SynthDef 
+  // has been registered 
+  SystemClock.sched(10, { 
+    "adding processSound".postln;
     ~processor = Synth.tail(s, \processSound);
-  }, "/done", argTemplate: ["/d_recv"]).oneShot;
+  });
   
   /**
    * Synth to play the file
