@@ -133,6 +133,12 @@ Server.local.waitForBoot({
     );
   }).send(s);
   
+  // last time we received a non-100 value
+  ~lastRecievedNon100 = Date.getDate.rawSeconds;
+  
+  // how long we wait until accepting 100 values
+  ~timeoutSeconds100 = 10;
+  
   /**
    * function that responds to the sensor inputs
    * @type {[type]}
@@ -142,10 +148,19 @@ Server.local.waitForBoot({
     sensorValue = msg[1];
     ("Received sensor value" + sensorValue).postln;
     
+    if (sensorValue != 100, {
+      ~lastRecievedNon100 = Date.getDate.rawSeconds;
+    });
+    
+    if (sensorValue == 100 && (Date.getDate.rawSeconds - ~lastRecievedNon100 > ~timeoutSeconds100), {
+      "Okay, we waited long enough. Setting to 100".postln;
+      sensorValue = 100;
+    });
+    
    // TODO: Map range
    // 0 = close 99 = far
    // ad-hoc scaling
-   ~processor.set(\filtFreq, 200 + (120 - sensorValue).midicps);
+   ~processor.set(\filtFreq, 700 + ((100 - sensorValue) * 1.2).midicps);
   }, '/distance');
 });
 
