@@ -144,15 +144,17 @@ Server.local.waitForBoot({
    * @type {[type]}
    */
   ~sensorFunction = OSCFunc({
-    arg msg, time, addr, recvPort;
-    sensorValue = msg[1];
+    arg msg, time, addr, recvPort, input;
+    input = msg[1];
     ("Received sensor value" + sensorValue).postln;
     
-    if (sensorValue != 100, {
+    if (input != 100, {
       ~lastRecievedNon100 = Date.getDate.rawSeconds;
+      sensorValue = input
     });
     
-    if (sensorValue == 100 && (Date.getDate.rawSeconds - ~lastRecievedNon100 > ~timeoutSeconds100), {
+    // ignore 100 for a while -- we get extraneous 100s sometimes for some reason
+    if (input == 100 && (Date.getDate.rawSeconds - ~lastRecievedNon100 > ~timeoutSeconds100), {
       "Okay, we waited long enough. Setting to 100".postln;
       sensorValue = 100;
     });
