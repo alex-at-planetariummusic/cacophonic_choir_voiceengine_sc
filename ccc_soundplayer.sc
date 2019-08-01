@@ -137,7 +137,7 @@ Server.local.waitForBoot({
   ~lastRecievedNon100 = Date.getDate.rawSeconds;
   
   // how long we wait until accepting 100 values
-  ~timeoutSeconds100 = 10;
+  ~timeoutSeconds100 = 2;
   
   /**
    * function that responds to the sensor inputs
