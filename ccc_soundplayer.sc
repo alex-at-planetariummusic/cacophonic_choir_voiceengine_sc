@@ -147,7 +147,7 @@ Server.local.waitForBoot({
         randAmt = 0, // 1 == fully random; 0 = not random at all
         sampleRate = 22050,
         amp = 0.5,
-        baseRate = 20.0,
+        baseRate = 17.0,
         baseGrainDur = 0.05;
     var gate = 1,
         pos = 0,
@@ -159,7 +159,7 @@ Server.local.waitForBoot({
         readEnv,
         probTrig,
         ampEnv;
-    clkRate = Rand(baseRate - (randAmt * 10), baseRate);
+    clkRate = Rand(baseRate - (1 + (randAmt * (baseRate - 1))), baseRate - randAmt);
     grainDur = 40 * baseGrainDur / clkRate;
     lengthScale = Rand.new(1.0, 1.0 + (randAmt * 3.0)).poll(gate);
     clk = Impulse.kr(clkRate);
