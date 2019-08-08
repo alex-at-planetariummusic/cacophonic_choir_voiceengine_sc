@@ -209,9 +209,9 @@ Server.local.waitForBoot({
 // OSCFunc.trace(false);
 
 // Send a distance message 
-NetAddr.new("127.0.0.1", NetAddr.langPort).sendMsg("/distance", 0);
-NetAddr.new("127.0.0.1", NetAddr.langPort).sendMsg("/distance", 0.5);
-NetAddr.new("127.0.0.1", NetAddr.langPort).sendMsg("/distance", 1);
+// NetAddr.new("127.0.0.1", NetAddr.langPort).sendMsg("/distance", 0);
+// NetAddr.new("127.0.0.1", NetAddr.langPort).sendMsg("/distance", 50);
+// NetAddr.new("127.0.0.1", NetAddr.langPort).sendMsg("/distance", 99);
 
 // turn off the lpf
 // ~processor.free
