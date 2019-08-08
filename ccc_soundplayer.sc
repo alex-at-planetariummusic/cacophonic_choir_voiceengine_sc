@@ -1,6 +1,10 @@
 // The port the word server listens on
 ~wordPort = 11000; 
 
+// ~wordSynth -- which synth to use to play the audio file
+~wordSynth = \stutter1; 
+// ~wordSynth = \playFile;
+
 // Boot server and start voice server
 Server.local.waitForBoot({
   var askForWordFunc,
@@ -36,7 +40,7 @@ Server.local.waitForBoot({
     buffer = Buffer.read(s, soundFile, action: {|buf|
       var bufferReadTime = Date.getDate.rawSeconds;
       ("Loading buffer took" + (bufferReadTime - startTime) + "seconds").postln;
-      synth = Synth.head(s, \playFile, [\bufNum, buf]);
+      synth = Synth.head(s, ~wordSynth, [\bufNum, buf, \randAmt, sensorValue / 100]);
       synth.onFree({
         buffer.free;
         askForWordFunc.value;
@@ -133,6 +137,41 @@ Server.local.waitForBoot({
     );
   }).send(s);
   
+  /**
+   * Stuttering Voice player
+   */
+  SynthDef(\stutter1, {
+    arg outBus = 0,
+        bufNum,
+        // trate = 10,
+        randAmt = 0, // 1 == fully random; 0 = not random at all
+        sampleRate = 22050,
+        amp = 0.5,
+        baseRate = 20.0,
+        baseGrainDur = 0.05;
+    var gate = 1,
+        pos = 0,
+        grainDur,
+        clk,
+        clkRate,
+        lengthScale,
+        lengthSeconds,
+        readEnv,
+        probTrig,
+        ampEnv;
+    clkRate = Rand(baseRate - (randAmt * 10), baseRate);
+    grainDur = 40 * baseGrainDur / clkRate;
+    lengthScale = Rand.new(1.0, 1.0 + (randAmt * 3.0)).poll(gate);
+    clk = Impulse.kr(clkRate);
+    lengthSeconds = (BufFrames.kr(bufNum) / sampleRate);
+    readEnv = EnvGen.kr(Env.new([grainDur/2, lengthSeconds - (grainDur/2)], [lengthScale * lengthSeconds]), doneAction: 2);
+    probTrig = CoinGate.kr(1 - (randAmt * 0.9), clk);
+    pos = Latch.kr(readEnv, probTrig);
+    // pos = Duty.kr(Drand([0]))
+    ampEnv = EnvGen.kr(Env.new([0, 1, 1, 0], [0.02, lengthSeconds - 0.04, 0.02]));
+    Out.ar(outBus, ampEnv * TGrains.ar(1, clk, bufNum, 1, pos, grainDur, amp: amp));
+  }).send(s);
+  
   // last time we received a non-100 value
   ~lastRecievedNon100 = Date.getDate.rawSeconds;
   
@@ -168,4 +207,11 @@ Server.local.waitForBoot({
 
 // OSCFunc.trace(true, true);
 // OSCFunc.trace(false);
-// ~processor.set(\filtFreq, 1900);
+
+// Send a distance message 
+NetAddr.new("127.0.0.1", NetAddr.langPort).sendMsg("/distance", 0);
+NetAddr.new("127.0.0.1", NetAddr.langPort).sendMsg("/distance", 0.5);
+NetAddr.new("127.0.0.1", NetAddr.langPort).sendMsg("/distance", 1);
+
+// turn off the lpf
+// ~processor.free
