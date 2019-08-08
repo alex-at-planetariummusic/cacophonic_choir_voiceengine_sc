@@ -169,7 +169,9 @@ Server.local.waitForBoot({
     pos = Latch.kr(readEnv, probTrig);
     // pos = Duty.kr(Drand([0]))
     ampEnv = EnvGen.kr(Env.new([0, 1, 1, 0], [0.02, lengthSeconds - 0.04, 0.02]));
-    Out.ar(outBus, ampEnv * TGrains.ar(1, clk, bufNum, 1, pos, grainDur, amp: amp));
+    // NB: The SuperCollider version we're using on the Pis needs the first 
+    // argument of TGrains.ar to be at least 2
+    Out.ar(outBus, ampEnv * TGrains.ar(2, clk, bufNum, 1, pos, grainDur, amp: amp));
   }).send(s);
   
   // last time we received a non-100 value
