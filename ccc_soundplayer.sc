@@ -1,3 +1,16 @@
+// CONFIGURATION STUFF ////////////////////////////////////////////////////////
+
+/** 
+ * Distance at which to start processing sound. When the distance is greater
+ * than this, the sound will be modified
+ */
+~startSoundProcessingAt = 30;
+
+/** Whether to apply the low pass filter */
+~applyLowPassFilter = true;
+
+// END CONFIGURATION STUFF ////////////////////////////////////////////////////
+
 // The port the word server listens on
 ~wordPort = 11000; 
 
@@ -9,7 +22,7 @@
 Server.local.waitForBoot({
   var askForWordFunc,
       playSoundFunc,
-      sensorValue = 1,
+      sensorValue = 0,
       lastReceivedWordTime = 0,
       fileLoadErrorOSCFunc,
       nextWordListOSCFunc,
@@ -40,7 +53,18 @@ Server.local.waitForBoot({
     buffer = Buffer.read(s, soundFile, action: {|buf|
       var bufferReadTime = Date.getDate.rawSeconds;
       ("Loading buffer took" + (bufferReadTime - startTime) + "seconds").postln;
-      synth = Synth.head(s, ~wordSynth, [\bufNum, buf, \randAmt, sensorValue / 100]);
+      
+      if (sensorValue < ~startSoundProcessingAt , {
+        // play the sound unmodified
+        "Playing sound UNmodified".postln;
+        synth = Synth.head(s, \playFile, [\bufNum, buf]);
+      },
+      { //else
+        var randAmt = (sensorValue - ~startSoundProcessingAt) / (100 - ~startSoundProcessingAt);
+        "Playing sound MODIFIED".postln;
+        synth = Synth.head(s, ~wordSynth, [\bufNum, buf, \randAmt, randAmt]);
+      });
+      
       synth.onFree({
         buffer.free;
         askForWordFunc.value;
@@ -116,9 +140,11 @@ Server.local.waitForBoot({
   
   // cheesy way to create the sound processing node after its SynthDef 
   // has been registered 
-  SystemClock.sched(10, { 
-    "adding processSound".postln;
-    ~processor = Synth.tail(s, \processSound);
+  if (~applyLowPassFilter, {
+    SystemClock.sched(10, { 
+      "adding processSound".postln;
+      ~processor = Synth.tail(s, \processSound);
+    });
   });
   
   /**
@@ -161,7 +187,7 @@ Server.local.waitForBoot({
         ampEnv;
     clkRate = Rand(baseRate - (1 + (randAmt * (baseRate - 1))), baseRate - randAmt);
     grainDur = 40 * baseGrainDur / clkRate;
-    lengthScale = Rand.new(1.0, 1.0 + (randAmt * 3.0)).poll(gate);
+    lengthScale = Rand.new(1.0, 1.0 + (randAmt * 3.0));
     clk = Impulse.kr(clkRate);
     lengthSeconds = (BufFrames.kr(bufNum) / sampleRate);
     readEnv = EnvGen.kr(Env.new([grainDur/2, lengthSeconds - (grainDur/2)], [lengthScale * lengthSeconds]), doneAction: 2);
@@ -200,10 +226,13 @@ Server.local.waitForBoot({
       sensorValue = 100;
     });
     
-   // TODO: Map range
-   // 0 = close 99 = far
-   // ad-hoc scaling
-   ~processor.set(\filtFreq, 700 + ((100 - sensorValue) * 1.2).midicps);
+    // TODO: Map range
+    // 0 = close 99 = far
+    // ad-hoc scaling
+    if (~applyLowPassFilter, {
+      ~processor.set(\filtFreq, 700 + ((100 - sensorValue) * 1.2).midicps);
+    })
+     
   }, '/distance');
 });
 
