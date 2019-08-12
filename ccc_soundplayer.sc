@@ -8,14 +8,17 @@
 /** Whether to apply the low pass filter */
 ~applyLowPassFilter = true;
 
+/**
+ * Amount of stuttering to apply. 1=normal; >1 more stuttering; <1 less stuttering.
+ * Much more than 1 might lead to lots of silence.
+*/
+~stutterScale = 2;
+
 // END CONFIGURATION STUFF ////////////////////////////////////////////////////
 
 // The port the word server listens on
 ~wordPort = 11000;
 
-// ~wordSynth -- which synth to use to play the audio file
-~wordSynth = \stutter1;
-// ~wordSynth = \playFile;
 
 ( // START SETUP
 
@@ -64,9 +67,9 @@ Server.local.waitForBoot({
           synth = Synth.head(s, \playFile, [\bufNum, buf]);
         },
         { //else
-          var randAmt = (sensorValue - ~startSoundProcessingAt) / (100 - ~startSoundProcessingAt);
+					var randAmt = ~stutterScale * ((sensorValue - ~startSoundProcessingAt) / (100 - ~startSoundProcessingAt));
           "Playing sound MODIFIED".postln;
-          synth = Synth.head(s, ~wordSynth, [\bufNum, buf, \randAmt, randAmt]);
+          synth = Synth.head(s, \stutter1, [\bufNum, buf, \randAmt, randAmt]);
         });
 
         synth.onFree({
@@ -252,5 +255,5 @@ Server.local.waitForBoot({
 // NetAddr.new("127.0.0.1", NetAddr.langPort).sendMsg("/distance", 99);
 
 // turn off the lpf
-// ~processor.free
+//~processor.free
 
