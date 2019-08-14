@@ -8,16 +8,23 @@
 /** Whether to apply the low pass filter */
 ~applyLowPassFilter = true;
 
+/** The frequency the low pass filter will be set to when distance = 100 */
+~minLowPassFilterHz = 1000;
+
 /**
  * Amount of stuttering to apply. 1=normal; >1 more stuttering; <1 less stuttering.
  * Much more than 1 might lead to lots of silence.
 */
-~stutterScale = 2;
+~stutterScale = 1;
+
+// how many seconds to wait until accepting 100 values
+~timeoutSeconds100 = 2;
 
 // END CONFIGURATION STUFF ////////////////////////////////////////////////////
 
 // The port the word server listens on
 ~wordPort = 11000;
+~audioSampleRate = 16000;
 
 
 ( // START SETUP
@@ -64,12 +71,12 @@ Server.local.waitForBoot({
         if (sensorValue < ~startSoundProcessingAt , {
           // play the sound unmodified
           "Playing sound UNmodified".postln;
-          synth = Synth.head(s, \playFile, [\bufNum, buf]);
+          synth = Synth.head(s, \playFile, [\bufNum, buf, \sampleRate, ~audioSampleRate]);
         },
         { //else
 					var randAmt = ~stutterScale * ((sensorValue - ~startSoundProcessingAt) / (100 - ~startSoundProcessingAt));
           "Playing sound MODIFIED".postln;
-          synth = Synth.head(s, \stutter1, [\bufNum, buf, \randAmt, randAmt]);
+          synth = Synth.head(s, \stutter1, [\bufNum, buf, \randAmt, randAmt, \sampleRate, ~audioSampleRate]);
         });
 
         synth.onFree({
@@ -212,8 +219,6 @@ Server.local.waitForBoot({
   // last time we received a non-100 value
   ~lastRecievedNon100 = Date.getDate.rawSeconds;
 
-  // how long we wait until accepting 100 values
-  ~timeoutSeconds100 = 2;
 
   /**
    * function that responds to the sensor inputs
@@ -236,24 +241,23 @@ Server.local.waitForBoot({
     });
 
     // TODO: Map range
-    // 0 = close 99 = far
-    // ad-hoc scaling
+    // 0 = close, 100 = far
+    // ad-hoc scaling; needs work!
     if (~applyLowPassFilter, {
-      ~processor.set(\filtFreq, 700 + ((100 - sensorValue) * 1.2).midicps);
+			~processor.set(\filtFreq, (~minLowPassFilterHz + ((100 - sensorValue) * 1.2).midicps).min(20000));
     });
 
   }, '/distance');
 });
 )
 
+
 // OSCFunc.trace(true, true);
 // OSCFunc.trace(false);
 
 // Send a distance message
 // NetAddr.new("127.0.0.1", NetAddr.langPort).sendMsg("/distance", 0);
-// NetAddr.new("127.0.0.1", NetAddr.langPort).sendMsg("/distance", 30);
 // NetAddr.new("127.0.0.1", NetAddr.langPort).sendMsg("/distance", 99);
 
 // turn off the lpf
 //~processor.free
-
