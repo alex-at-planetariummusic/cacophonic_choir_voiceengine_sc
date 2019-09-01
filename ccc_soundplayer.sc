@@ -125,7 +125,8 @@ Server.local.waitForBoot({
       "Checking if we're lonely".postln;
 
       if (now - lastReceivedWordTime > 10, {
-        "Asking for word".postln;
+        "Asking for word *****************************************************************************".postln;
+        playing = false;
         askForWordFunc.value;
       });
       // wait a minute;
@@ -171,7 +172,9 @@ Server.local.waitForBoot({
         rate = 1,
         sampleRate = 22050, // sample rate of the file
         bufNum;
-    var scaledRate = sampleRate / SampleRate.ir;
+    // if buffer doesn't have sample rate, you have to figure out the rate scaling this way:
+    // var scaledRate = sampleRate / SampleRate.ir;
+    var scaledRate = BufRateScale.ir(bufNum);
 
     // 2 = Done.freeSelf (Done is not in pi's supercollider)
     Out.ar(out,
