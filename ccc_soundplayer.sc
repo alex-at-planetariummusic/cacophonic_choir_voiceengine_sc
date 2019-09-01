@@ -6,7 +6,7 @@
 ~startSoundProcessingAt = 30;
 
 /** Whether to apply the low pass filter */
-~applyLowPassFilter = true;
+~applyLowPassFilter = false;
 
 /** The frequency the low pass filter will be set to when distance = 100 */
 ~minLowPassFilterHz = 1000;
