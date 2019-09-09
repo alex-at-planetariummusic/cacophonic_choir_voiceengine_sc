@@ -17,9 +17,6 @@
 */
 ~stutterScale = 1;
 
-// how many seconds to wait until accepting 100 values
-~timeoutSeconds100 = 2;
-
 // END CONFIGURATION STUFF ////////////////////////////////////////////////////
 
 // The port the word server listens on
@@ -87,6 +84,7 @@ Server.local.waitForBoot({
       });
     });
   };
+
   /**
    * Listens for /nextWord/0 messages and plays the sound
    */
@@ -219,10 +217,6 @@ Server.local.waitForBoot({
     Out.ar(outBus, ampEnv * TGrains.ar(2, clk, bufNum, 1, pos, grainDur, amp: amp));
   }).send(s);
 
-  // last time we received a non-100 value
-  ~lastRecievedNon100 = Date.getDate.rawSeconds;
-
-
   /**
    * function that responds to the sensor inputs
    * @type {[type]}
@@ -232,16 +226,7 @@ Server.local.waitForBoot({
     input = msg[1];
     ("Received sensor value" + sensorValue).postln;
 
-    if (input != 100, {
-      ~lastRecievedNon100 = Date.getDate.rawSeconds;
-      sensorValue = input
-    });
-
-    // ignore 100 for a while -- we get extraneous 100s sometimes for some reason
-    if (input == 100 && (Date.getDate.rawSeconds - ~lastRecievedNon100 > ~timeoutSeconds100), {
-      "Okay, we waited long enough. Setting to 100".postln;
-      sensorValue = 100;
-    });
+    sensorValue = input;
 
     // TODO: Map range
     // 0 = close, 100 = far
