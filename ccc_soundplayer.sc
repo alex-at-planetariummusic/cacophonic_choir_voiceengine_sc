@@ -168,6 +168,7 @@ Server.local.waitForBoot({
   SynthDef(\playFile, {
     arg out = 0,
         rate = 1,
+        amp = 1,
         sampleRate = 22050, // sample rate of the file
         bufNum;
     // if buffer doesn't have sample rate, you have to figure out the rate scaling this way:
@@ -176,7 +177,7 @@ Server.local.waitForBoot({
 
     // 2 = Done.freeSelf (Done is not in pi's supercollider)
     Out.ar(out,
-        PlayBuf.ar(1, bufNum, scaledRate, doneAction: 2).dup
+        amp * PlayBuf.ar(1, bufNum, scaledRate, doneAction: 2).dup
     );
   }).send(s);
 
