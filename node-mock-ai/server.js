@@ -19,15 +19,9 @@ const oscPort = new osc.UDPPort({
 });
 
 oscPort.on("ready", function() {
-
   console.log("Listening for OSC over UDP.");
   console.log("Port:", oscPort.options.localPort);
-
-  // something has to send the first message. It should probably be the supercollider part,
-  // but for testing purposes it's the word server
-  sendMessage();
 });
-
 
 const words = [
   'DOESNOTEXIST',
@@ -60,8 +54,8 @@ oscPort.on("message", function(oscMessage) {
  */
 function sendMessage() {
   const newWord = words[Math.round(Math.random() * 10)];
-  // const newWordFile = `${soundsPath}/${newWord}.aiff`
-  const newWordFile = `${soundsPath}/${newWord}.wav`
+  const newWordFile = `${soundsPath}/${newWord}.aiff`
+  // const newWordFile = `${soundsPath}/${newWord}.wav`
 
   console.log(`Sending new word "${newWordFile}"`);
   oscPort.send({
