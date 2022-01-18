@@ -30,11 +30,13 @@ const words = [
   'busy',
   'division',
   'divide',
-  'district',
+  // 'district',
   'dizzy',
   'dj',
   'dm',
-  'figures'
+  'figures',
+  'wow',
+  '😀'
 ];
 
 
@@ -42,7 +44,6 @@ oscPort.on("message", function(oscMessage) {
   console.log("Received message: ", oscMessage);
 
   if (oscMessage.address === '/lastword/0') {
-    console.log(`Last word was "${oscMessage.args[0]}"`);
     sendMessage();
   } else {
     console.warn('Not handling message: ' + oscMessage.address);
@@ -54,8 +55,7 @@ oscPort.on("message", function(oscMessage) {
  */
 function sendMessage() {
   const newWord = words[Math.round(Math.random() * 10)];
-  const newWordFile = `${soundsPath}/${newWord}.aiff`
-  // const newWordFile = `${soundsPath}/${newWord}.wav`
+  const newWordFile = `${soundsPath}/${newWord}.wav`;
 
   console.log(`Sending new word "${newWordFile}"`);
   oscPort.send({
