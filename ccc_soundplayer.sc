@@ -29,7 +29,7 @@
 
 s = Server.local;
 
-s.boot;
+// s.boot;
 
 "Initialize functions".postln;
 
@@ -56,7 +56,6 @@ s.boot;
           ~wordRingBuffer.add(buf);
         });
         postf("Next word: %\n", msg[1]);
-        // ~wordRingBuffer.add(buffer);
     }, '/nextWord/0');
     
     /**
@@ -74,7 +73,6 @@ s.boot;
             ("Buffer allocation read error; buffer:" + bufNumber).postln;
             
             s.cachedBufferAt(bufNumber).free;
-            // ~wordRingBuffer.removeAllSuchThat({|it| it.bufnum == bufNumber });
 
             ~askForWordFunc.value;
         };
@@ -91,7 +89,7 @@ s.boot;
       arg msg, time, addr, recvPort, input;
 
       ~sensorValue = msg[1];
-  		("Received sensor value" + ~sensorValue).postln;
+  		// ("Received sensor value" + ~sensorValue).postln;
     }, '/distance');
     
     /**
@@ -102,7 +100,7 @@ s.boot;
       // ("playing " ++ buffer.bufnum +/+ buffer.path).postln;
       
       // TODO: also check if buffer is playable
-      if (buffer.numFrames == nil, {
+      if (if(buffer.isNil, true, buffer.numFrames.isNil), {
         "No buffer loaded :(".postln;
         buffer.postln;
         
