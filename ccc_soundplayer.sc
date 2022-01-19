@@ -11,6 +11,7 @@
  * Adjust the time between grains by this amount
  */
 ~grain_squish_amount_s = -0.05;
+~word_squish_amount_s = -0.1;
     
 ~wordRingBuffer = RingBuffer.new;
 /**
@@ -138,7 +139,7 @@ s = Server.local;
       ("Scheduling cleanup of: " ++ buffer.bufnum +/+ buffer.path).postln;
       {
         |timeFromNow|
-        timeFromNow.wait;
+        timeFromNow.wait + ~word_squish_amount_s;
         ~playSoundFunc.value;
         ("Cleaning up: " ++  buffer.bufnum +/+ buffer.path).postln;
         buffer.free
