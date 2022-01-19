@@ -100,9 +100,11 @@ s = Server.local;
       // ("playing " ++ buffer.bufnum +/+ buffer.path).postln;
       
       // TODO: also check if buffer is playable
-      if (if(buffer.isNil, true, buffer.numFrames.isNil), {
+      if (if(buffer.isNil, true, {buffer.numFrames.isNil}), {
         "No buffer loaded :(".postln;
-        buffer.postln;
+        ~askForWordFunc.value;
+        1.wait;
+        ~playSoundFunc.value;
         
         // TODO: ask for word and start playing when it is received
       }, { // else 
@@ -288,9 +290,6 @@ b = Buffer.read(s, '/Users/alex/Documents/cacophonic/soundaiff/dm.aiff', action:
     "hm?".postln;
   });
   
-b.numFrames;
-b.postln;
-  
 
 Synth.head(s, \playFile, [\bufNum, b, \sampleRate, ~audioSampleRate]);
 
@@ -310,6 +309,7 @@ Synth.head(s, \playGrain, [\bufNum, b, \lengthSeconds, 0.3, \startPosSeconds, 0.
 ~wordRingBuffer.size;
 ~wordRingBuffer.removeAllSuchThat({|it| it.bufnum == ~buf.bufnum});
 ~sensorValue;
+
 
 NetAddr.langPort;
 }
