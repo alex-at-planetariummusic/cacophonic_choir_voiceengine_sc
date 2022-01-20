@@ -103,6 +103,7 @@ s = Server.local;
       // TODO: also check if buffer is playable
       if (if(buffer.isNil, true, {buffer.numFrames.isNil}), {
         "No buffer loaded :(".postln;
+        buffer.free;
         ~askForWordFunc.value;
         1.wait;
         ~playSoundFunc.value;
@@ -142,7 +143,7 @@ s = Server.local;
         timeFromNow.wait + ~word_squish_amount_s;
         ~playSoundFunc.value;
         ("Cleaning up: " ++  buffer.bufnum +/+ buffer.path).postln;
-        buffer.free
+        buffer.free;
       }
     };
     
