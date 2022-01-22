@@ -3,6 +3,8 @@
 * Distance at which to start processing sound. When the distance is greater
 * than this, the sound will be modified
 */
+(
+  
 ~startSoundProcessingAt = 30;
 
 ~min_grain_length_s = 0.05;
@@ -22,14 +24,12 @@
 
 // The port the word server listens on
 ~wordPort = 11000;
-~audioSampleRate = 16000;
-~sensorValue = 100;
+// From 0-100
+~sensorValue = 10;
 
 // END CONFIGURATION STUFF ////////////////////////////////////////////////////
 
-
 s = Server.local;
-
 // s.boot;
 
 "Initialize functions".postln;
@@ -38,7 +38,7 @@ s = Server.local;
     * Asks for a word from the word server
     */
     ~askForWordFunc = {
-      "askForWordFunc".postln;
+        // "askForWordFunc".postln;
         NetAddr.new("127.0.0.1", ~wordPort).sendMsg("/lastword/0", ~sensorValue);
     };
     
@@ -98,34 +98,40 @@ s = Server.local;
     */
     ~playSoundFunc = {
       var buffer = ~wordRingBuffer.pop();
-      // ("playing " ++ buffer.bufnum +/+ buffer.path).postln;
       
-      // TODO: also check if buffer is playable
       if (if(buffer.isNil, true, {buffer.numFrames.isNil}), {
         "No buffer loaded :(".postln;
         buffer.free;
+        
+        // ask for a new word, wait a second, then play it
         ~askForWordFunc.value;
         1.wait;
         ~playSoundFunc.value;
-        
-        // TODO: ask for word and start playing when it is received
       }, { // else 
+        ("playing" + buffer.bufnum + buffer.path).postln;
         // // Queue the next word
         ~askForWordFunc.value;
         // 
         if (~sensorValue < ~startSoundProcessingAt, {
-        //   // play the sound unmodified
+          // play the sound unmodified
           var playNextSoundAt = buffer.numFrames / buffer.sampleRate;
           "Playing sound UNmodified".postln;
-          Synth.head(s, \playFile, [\bufNum, buffer, \sampleRate, ~audioSampleRate]);
+          Synth.head(s, \playFile, [\bufNum, buffer]);
+          
+          // playNextSoundAt.wait;
+          // ~playSoundFunc.value;
+          // buffer.free;
+          // ("Free" + buffer.bufnum);
+          // s.cachedBufferAt(buffer).free;
           
           ~scheduleNextWordAndFreeBuffer.value(buffer).value(playNextSoundAt);
+          // for some reason buffer doesn't get freed here until the random branch is switched to
         },
         { // else play the sound processed
               var randAmt = ~stutterScale * ((~sensorValue - ~startSoundProcessingAt) / (100 - ~startSoundProcessingAt));
               "Playing sound MODIFIED".postln;
         
-              ~playGrainsLoop.value(buffer, ~scheduleNextWordAndFreeBuffer.value(buffer), randAmt);// untested
+              ~playGrainsLoop.value(buffer, ~scheduleNextWordAndFreeBuffer.value(buffer), randAmt);
         });
       });
     };
@@ -141,13 +147,21 @@ s = Server.local;
       {
         |timeFromNow|
         timeFromNow.wait + ~word_squish_amount_s;
-        ~playSoundFunc.value;
+        {
+          ("play " ++ buffer.bufnum).postln;
+          ~playSoundFunc.value;
+        }.fork;
+        
         ("Cleaning up: " ++  buffer.bufnum +/+ buffer.path).postln;
         buffer.free;
       }
     };
     
     
+    /**
+     * [playGrainsLoop description]
+     * @param callback - function to call with argumen `n` where n is the time in seconds when the loop will be finished
+     */
 ~playGrainsLoop = {|buffer, callback, random_amount=0.5|
 	var location_s = 0,
 	grain_length_s,
@@ -180,12 +194,12 @@ s = Server.local;
   }.fork
 };
 
+);
 
 
-
-// Boot server and start voice server
+( // Boot server and start voice server
 Server.local.waitForBoot({
-    "Booting the sound server!  ******************************************".postln;
+    "Sound server is booted! *********************************************".postln;
     ("sclang is using the port" + NetAddr.langPort).postln;
     "*********************************************************************".postln;
     
@@ -231,10 +245,8 @@ Server.local.waitForBoot({
         arg out = 0,
         rate = 1,
         amp = 2,
-        sampleRate = 22050, // sample rate of the file
         bufNum;
         // if buffer doesn't have sample rate, you have to figure out the rate scaling this way:
-        // var scaledRate = sampleRate / SampleRate.ir;
         var scaledRate = BufRateScale.ir(bufNum);
 
         // 2 = Done.freeSelf (Done is not in pi's supercollider)
@@ -251,18 +263,16 @@ Server.local.waitForBoot({
         bufNum,
         lengthSeconds,
     		startPosSeconds = 0,
-        sampleRate = 22050,
         amp = 1;
 
         var ampEnv;
 
 
 		 // if buffer doesn't have sample rate, you have to figure out the rate scaling this way:
-        // var scaledRate = sampleRate / SampleRate.ir;
         var scaledRate = BufRateScale.ir(bufNum);
     		var startPos = BufSampleRate.ir(bufNum) * startPosSeconds;
 
-        ampEnv = EnvGen.kr(Env.new([0, 1, 1, 0], [0.02, lengthSeconds - 0.04, 0.02]), doneAction: 2);
+        ampEnv = amp * EnvGen.kr(Env.new([0, 1, 1, 0], [0.02, lengthSeconds - 0.04, 0.02]), doneAction: 2);
 
         Out.ar(outBus, ampEnv * PlayBuf.ar(1, bufNum, scaledRate, startPos: startPos, doneAction: 2).dup);
     }).send(s);
@@ -274,6 +284,7 @@ Server.local.waitForBoot({
     "Now play it".postln;
     ~playSoundFunc.value;
 });
+);
   
 
 // Debugging stuff. In a function so it doesn't get run when the file loads
@@ -293,16 +304,17 @@ b = Buffer.read(s, '/Users/alex/Documents/cacophonic/soundaiff/dm.aiff', action:
   });
   
 
-Synth.head(s, \playFile, [\bufNum, b, \sampleRate, ~audioSampleRate]);
+Synth.head(s, \playFile, [\bufNum, b]);
 
 
-Synth.head(s, \playGrain, [\bufNum, b, \lengthSeconds, 0.3, \startPosSeconds, 0.4, \sampleRate, ~audioSampleRate]);
+Synth.head(s, \playGrain, [\bufNum, b, \lengthSeconds, 0.3, \startPosSeconds, 0.4]);
 
 ~playGrainsLoop.value(b, ~cb, random_amount: 0.5);
 
 // start it ///////////////////////////////////////////////
 ~playSoundFunc.value;
 
+~wordRingBuffer;
 
 ~askForWordFunc.value;
 ~nextWordListOSCFunc.free;
@@ -311,8 +323,7 @@ Synth.head(s, \playGrain, [\bufNum, b, \lengthSeconds, 0.3, \startPosSeconds, 0.
 ~wordRingBuffer.size;
 ~wordRingBuffer.removeAllSuchThat({|it| it.bufnum == ~buf.bufnum});
 ~sensorValue;
-
-
+s.options.numBuffers;
 NetAddr.langPort;
 }
 
