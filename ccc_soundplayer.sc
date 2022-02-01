@@ -1,18 +1,20 @@
 // CONFIGURATION STUFF ////////////////////////////////////////////////////////
+(
 /**
 * Distance at which to start processing sound. When the distance is greater
 * than this, the sound will be modified
 */
-(
-  
 ~startSoundProcessingAt = 30;
 
 ~min_grain_length_s = 0.05;
 ~max_grain_length_s = 0.4;
 /**
- * Adjust the time between grains by this amount
+ * Adjust the time between grains by this amount in seconds
  */
 ~grain_squish_amount_s = -0.05;
+/**
+ * Adjust time between words by this amount in seconds
+ */
 ~word_squish_amount_s = -0.1;
     
 ~wordRingBuffer = RingBuffer.new;
@@ -39,7 +41,13 @@ s = Server.local;
     */
     ~askForWordFunc = {
         // "askForWordFunc".postln;
-        NetAddr.new("127.0.0.1", ~wordPort).sendMsg("/lastword/0", ~sensorValue);
+        // Don't ask for new words if we have a surplus. Sometimes the word server freezes for a few seconds, and sends a bunch of words at once. 
+        if (~wordRingBuffer.size < 2, {
+          NetAddr.new("127.0.0.1", ~wordPort).sendMsg("/lastword/0", ~sensorValue);
+        }, {
+          "not asking: ".postln;
+          ~wordRingBuffer.size.postln;
+        });
     };
     
     /**
@@ -117,12 +125,6 @@ s = Server.local;
           var playNextSoundAt = buffer.numFrames / buffer.sampleRate;
           "Playing sound UNmodified".postln;
           Synth.head(s, \playFile, [\bufNum, buffer]);
-          
-          // playNextSoundAt.wait;
-          // ~playSoundFunc.value;
-          // buffer.free;
-          // ("Free" + buffer.bufnum);
-          // s.cachedBufferAt(buffer).free;
           
           ~scheduleNextWordAndFreeBuffer.value(buffer).value(playNextSoundAt);
           // for some reason buffer doesn't get freed here until the random branch is switched to
@@ -326,4 +328,3 @@ Synth.head(s, \playGrain, [\bufNum, b, \lengthSeconds, 0.3, \startPosSeconds, 0.
 s.options.numBuffers;
 NetAddr.langPort;
 }
-
