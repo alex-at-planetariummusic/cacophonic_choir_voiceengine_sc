@@ -7,6 +7,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "osc": "^2.3.1"
+    "osc": "^2.4.4"
   }
 }
